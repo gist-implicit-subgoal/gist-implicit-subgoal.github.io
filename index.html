@@ -33,21 +33,8 @@
     <section id="abstract">
       <h2 class="section-title">Abstract</h2>
       <p class="abstract">
-        We present GIST, an end-to-end visuomotor policy trained with an auxiliary sub-goal prediction loss for
-        manipulation tasks with non-prehensile components. Adding structure to behaviour cloning manipulation
-        policies has been shown to improve robustness and generalization, with sub-goal based hierarchies predicting
-        intermediate sub-goals with a high-level model and leaving a low-level policy to reach them. These sub-goals
-        are extracted at gripper open-close frames, and hence the hierarchy is learned around this discrete signal.
-        Non-prehensile settings, such as pouring or sweeping, hold the gripper in a fixed configuration, so no such
-        open-close events occur and transitions go undetected. GIST instead uses sub-goals purely as a training
-        signal. An auxiliary head reads the visual tokens the policy acts on and predicts a weighted Gaussian mixture
-        over the next sub-goal gripper pose, placing a mode on each plausible sub-goal instead of collapsing to an
-        average. The head is discarded after training. Across four simulation and three real-world tasks, GIST
-        outperforms a standard sub-goal based hierarchical policy by 15.2% and a stronger uncertainty-aware baseline
-        by 5.9%, while removing the auxiliary loss costs 10.7% in simulation and 32.8% in the real world. GIST also
-        outperforms Diffusion Policy by 5.4% across five prehensile and non-prehensile tasks. Performance is largely
-        insensitive to the sub-goal extraction procedure, indicating that what matters is the presence of spatial
-        goal supervision, not its precise definition.
+        We present GIST, an end-to-end visuomotor policy trained with an auxiliary sub-goal prediction loss for manipulation tasks with non-prehensile components. Adding structure to behaviour cloning manipulation policies has been shown to improve robustness and generalization, with sub-goal based hierarchies predicting intermediate sub-goals with a high-level model and leaving a low-level policy to reach them. These sub-goals are typically extracted at gripper open-close frames, and hence the hierarchy is learned around this discrete signal. Non-prehensile settings, such as pouring or sweeping, hold the gripper in a fixed configuration, so no such open-close events occur and transitions go undetected. GIST instead uses sub-goals purely as a training signal. An auxiliary head reads the visual tokens the policy acts on and predicts a weighted Gaussian mixture over the next sub-goal gripper pose, placing a mode on each plausible sub-goal instead of collapsing to an average. The head is discarded after training. Across four simulation and three real-world tasks, GIST outperforms a standard sub-goal based hierarchical policy by 15.2\% and a stronger uncertainty-aware baseline that we formulate by 5.9\%, while removing the auxiliary loss costs 10.7\% in simulation and 33.3\% in the real world. GIST also outperforms Diffusion Policy by 3.4\% across five prehensile and non-prehensile MimicGen tasks, and by 4.4\% in target area coverage on Push-T. Performance is largely insensitive to the sub-goal extraction procedure, indicating that what matters is the presence of spatial goal supervision, not its precise definition. Website: \url{https://gist-implicit-subgoal.github.io/}
+
       </p>
     </section>
 
