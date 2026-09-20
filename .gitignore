@@ -3,3 +3,4 @@
 node_modules/
 Uncertainty_Reasoning_ICRA_Submission*.pdf
 assets/gist_paper.pdf
+*.claude/

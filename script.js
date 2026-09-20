@@ -338,10 +338,10 @@ function hBarsPlain(holder, { items, xMin, xMax }) {
 /* ---------- render charts ---------- */
 groupedColumns(document.getElementById("chart-sim"), {
   title: "Simulation: GIST vs. auxiliary-loss ablations and hierarchical baselines",
-  sub: "Success rate (%) of the best checkpoint, 150 episodes per task. The axis runs from zero and stops just above the highest bar, so equal heights mean equal success. Table I.",
+  sub: "Success rate (%) of the best checkpoint, each rolled out for 150 episodes per task in three blocks of 50 seeds, from 100 demonstrations and 100 epochs on each MimicGen task and 206 demonstrations and 200 epochs on Push-T. The axis runs from zero and stops just above the highest bar, so equal heights mean equal success. Table I.",
   groups: SIM.groups, series: SIM.series, labelMode: "avg+ours", width: 980, height: 470,
   refLine: { value: 60.2, label: "GIST average" },
-  foot: "The standard hierarchical baseline is an ArticuBot/GHOST-style high-level model that commits to a single sub-goal. The uncertainty-aware hierarchical baseline is a stronger variant, formulated here, that passes the full mixture to the low-level policy. All sub-goal methods use AWE-greedy extraction (th = 0.35).",
+  foot: "The standard hierarchical baseline is an ArticuBot/GHOST-style high-level model that commits to a single sub-goal. The uncertainty-aware hierarchical baseline is a stronger variant, formulated here, that passes the full mixture to the low-level policy. All sub-goal methods use AWE-greedy extraction (th = 0.35). Replacing the mixture with single sub-goal regression recovers only part of the gain, reaching 54.7% and remaining 5.5 points behind GIST, with the widest gap on Coffee Preparation (68.0 against 50.0). Push-T counts as a success when the block covers more than 0.95 of the target region at some point in the episode.",
 });
 
 groupedColumns(document.getElementById("chart-real"), {
@@ -360,7 +360,7 @@ groupedColumns(document.getElementById("chart-partial"), {
 
 hBars(document.getElementById("chart-extract"), {
   title: "Robustness to the sub-goal extraction procedure",
-  sub: "GIST average success (%) over the four simulation tasks, one extractor per row. Table III.",
+  sub: "GIST average success (%) over the four simulation tasks, one extractor per row. Each row retrains the same policy on the same demonstrations and differs only in where the sub-goal boundaries are placed: AWE selects the waypoints that best reconstruct the trajectory, the changepoint detector splits on abrupt changes in end-effector speed, the VLM reads contact sheets of frames and names the ones where a manipulation event completes, the heuristic combines the gripper state with end-effector orientation, and the fixed interval is an uninformative control that cuts every 20 steps. Table III.",
   items: EXTRACT, ref: { value: 49.5, label: "No auxiliary loss" }, xMin: 40, xMax: 70,
   foot: "*The heuristic is not applicable to Push-T, so its average is taken over the three MimicGen tasks. Five of the procedures span only 2.8 points, and every one remains well above the policy trained without sub-goal supervision.",
   tableCols: EXTRACT_TABLE.cols, tableRows: EXTRACT_TABLE.rows, oursRow: "AWE greedy, th = 0.35",
@@ -378,7 +378,7 @@ hBars(document.getElementById("chart-dp"), {
   ],
   xMin: 30, xMax: 70, valueLabel: "MimicGen average",
   extra: { title: "Push-T target-area coverage (%)", items: [{ name: "GIST (ours)", value: 95.4 }, { name: "DP-C, absolute", value: 91.0, emph: false }], xMin: 80, xMax: 100 },
-  foot: "On the MimicGen average, GIST exceeds the strongest Diffusion Policy variant by 5.0 points and the same policy without the auxiliary loss by 8.4 points. The largest per-task margin is on Square D2 (43.3 against 19.0). Per-task values are given in the table.",
+  foot: "On the MimicGen average, GIST exceeds the strongest Diffusion Policy variant by 5.0 points and the same policy without the auxiliary loss by 8.4 points. The largest per-task margin is on Square D2 (43.3 against 19.0). This comparison trains for longer on more demonstrations than the simulation chart above, so its per-task values are higher and the two are not directly comparable. Per-task values are given in the table.",
   tableCols: DP_TABLE.cols, tableRows: DP_TABLE.rows, oursRow: "GIST (ours)",
 });
 
@@ -395,7 +395,7 @@ hBars(document.getElementById("chart-dp"), {
 // just an identifier and no longer tracks display position.
 const TASKS = [
   {
-    id: "pour", paired: true, dropRobot: true, scenes: { w: 2006, h: 612, ours: 22, base: 20, note: " One further GIST recording is truncated in the released dataset and is not included." }, name: "Pouring", goal: "Grasp the jar, transport it over the bowl and pour the barley.",
+    id: "pour", scenes: { w: 2006, h: 612, n: 20 }, name: "Pouring", goal: "Grasp the jar, transport it over the bowl and pour the coffee beans.",
     pairs: [
       { speed: 8,
         ours: { src: "pour_gist_3", ep: 5, ok: true },
@@ -424,7 +424,7 @@ const TASKS = [
     ],
   },
   {
-    id: "sweep", paired: false, dropRobot: false, scenes: { w: 2006, h: 612, ours: 20, base: 20, note: "" }, name: "Sweeping", goal: "Sweep the tissues into the dustpan with the brush.",
+    id: "sweep", scenes: { w: 2006, h: 612, n: 20 }, name: "Sweeping", goal: "Sweep the tissues into the dustpan with the brush.",
     pairs: [
       { speed: 8,
         ours: { src: "sweep_gist_5", ep: 16, ok: true },
@@ -453,7 +453,7 @@ const TASKS = [
     ],
   },
   {
-    id: "push", paired: false, dropRobot: true, scenes: { w: 2006, h: 612, ours: 20, base: 20, note: "" }, name: "Pushing", goal: "Displace the block to the target region without grasping it.",
+    id: "push", scenes: { w: 2006, h: 612, n: 20 }, name: "Pushing", goal: "Displace the block to the target region without grasping it.",
     pairs: [
       { speed: 8,
         ours: { src: "push_gist_4", ep: 10, ok: true },
@@ -536,13 +536,9 @@ TASKS.forEach((t, i) => {
     `<picture>
        <source srcset="assets/img/scenes_${t.id}.webp" type="image/webp">
        <img src="assets/img/scenes_${t.id}.jpg" width="${t.scenes.w}" height="${t.scenes.h}" loading="lazy" decoding="async"
-            alt="Every ${t.name.toLowerCase()} rollout overlaid into one view: ${t.scenes.ours} starting arrangements for GIST and ${t.scenes.base} for the ablation, the objects appearing at a different position in each.">
+            alt="The first frames of the ${t.scenes.n} ${t.name.toLowerCase()} evaluation scenes, overlaid into one view.">
      </picture>
-     <figcaption><strong>Starting arrangements.</strong> The opening frame of every ${t.name.toLowerCase()} rollout composited into a single view,
-     ${t.scenes.ours} for GIST and ${t.scenes.base} for the ablation. The rig is the per-pixel median of the set and each rollout's objects are laid
-     over it, so the table reads as one surface while the objects appear once per rollout${t.dropRobot ? ", and the arm is drawn once in its rest pose rather than once per rollout" : ""}. ${t.paired
-       ? "Both conditions were run over the same arrangements, so the two rows of the strip above can be read rollout by rollout."
-       : "The two conditions were run over independently arranged scenes, so a column above pairs two rollouts rather than one arrangement."}${t.scenes.note}</figcaption>`;
+     <figcaption><strong>Starting arrangements.</strong> First frames of the ${t.scenes.n} evaluation scenes.</figcaption>`;
   p.appendChild(fig);
 
   panels.appendChild(p);

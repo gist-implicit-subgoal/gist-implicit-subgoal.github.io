@@ -83,7 +83,7 @@
         <div class="stat good" role="listitem"><div class="value">+33.3<small>pts</small></div><div class="label">real-world full-task success over the same policy trained without the auxiliary loss</div></div>
         <div class="stat" role="listitem"><div class="value">+15.2<small>pts</small></div><div class="label">over a standard sub-goal hierarchical policy in simulation, with no high-level model at inference</div></div>
         <div class="stat" role="listitem"><div class="value">+5.9<small>pts</small></div><div class="label">over a stronger uncertainty-aware hierarchical baseline that passes the full mixture downstream</div></div>
-        <div class="stat" role="listitem"><div class="value">6<small>extractors</small></div><div class="label">sub-goal extraction procedures spanning 2.8 points of average success, indicating that the presence of the supervision matters more than its precise definition</div></div>
+        <div class="stat" role="listitem"><div class="value">6<small>extractors</small></div><div class="label">sub-goal extraction procedures, five of them spanning just 2.8 points of average success and all six clearing the policy trained without sub-goal supervision, indicating that the presence of the supervision matters more than its precise definition</div></div>
       </div>
 
       <section class="summary reveal" id="summary" aria-labelledby="summary-title">
@@ -172,7 +172,7 @@
     <div class="container">
       <p class="eyebrow">Method</p>
       <h2>A single network trained under two objectives on a shared visual representation</h2>
-      <p class="lede">GIST is a flow-matching DiT policy on 3D-grounded visual tokens. During training an auxiliary head reads the same tokens and is trained by the negative log-likelihood of the demonstrated next sub-goal under a per-anchor Gaussian mixture. The total loss is <em>L</em><sub>FM</sub> + <em>c</em><sub>1</sub>·<em>L</em><sub>goal</sub> with <em>c</em><sub>1</sub> = 0.1, so that the sub-goal shapes the representation attended to by the action head without entering its input.</p>
+      <p class="lede">A sub-goal here is the gripper configuration at a frame where one stage of a demonstration ends and the next begins. It carries no semantic label and amounts to a waypoint of the end-effector trajectory, represented by four gripper keypoints. GIST is a flow-matching DiT policy on 3D-grounded visual tokens. During training an auxiliary head reads the same tokens and is trained by the negative log-likelihood of the demonstrated next sub-goal under a per-anchor Gaussian mixture. The total loss is <em>L</em><sub>FM</sub> + <em>c</em><sub>1</sub>·<em>L</em><sub>goal</sub> with <em>c</em><sub>1</sub> = 0.1, so that the sub-goal shapes the representation attended to by the action head without entering its input.</p>
 
       <figure class="figure reveal">
         <picture>
@@ -195,7 +195,7 @@
           <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 18c3 0 4-10 7-10s3 10 6 10 3-8 7-8"/><circle cx="9" cy="8" r="1.4" fill="currentColor"/><circle cx="22" cy="10" r="1.4" fill="currentColor"/></svg></div>
           <div class="step">02 · Auxiliary head</div>
           <h3>Per-anchor Gaussian mixture</h3>
-          <p>Every grounded token proposes a sub-goal displacement and a weight. Trained by NLL over a variance ladder, the mixture retains a mode on <em>each</em> plausible next sub-goal rather than averaging them, which is the characteristic failure mode of a regression head.</p>
+          <p>Every grounded token proposes a sub-goal displacement and a weight. The head is trained by negative log-likelihood at several Gaussian widths at once, from broad to narrow, so that the wide settings first place mass in the right region and the narrow ones sharpen it, with a uniform-weight term at each width keeping every anchor regressing a plausible offset. The mixture therefore retains a mode on <em>each</em> plausible next sub-goal rather than averaging them, which is the characteristic failure mode of a regression head.</p>
         </div>
         <div class="card">
           <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/><path d="M10 11v5M14 11v5"/></svg></div>
@@ -211,7 +211,7 @@
     <div class="container">
       <p class="eyebrow">Real-world rollouts</p>
       <h2>An identical policy and training set, with and without the auxiliary loss</h2>
-      <p class="lede">The two policies share the architecture, random seed, data ordering and training schedule; the only difference between them is the auxiliary gradient. Evaluation uses a Franka arm, 100 teleoperated demonstrations per task and 20 different scene configurations, largely unseen during training. Eight rollouts are shown per task, arranged in columns that scroll horizontally, with GIST in the upper row and the ablation in the lower row. Both clips in a column are played at a single speed, indicated on each clip.</p>
+      <p class="lede">The two policies share the architecture, random seed, data ordering and training schedule; the only difference between them is the auxiliary gradient. Each policy is trained on 100 teleoperated demonstrations and evaluated on 20 distinct initial scene configurations, in which the placement of every object is varied so that the configurations span the workspace. Eight rollouts are shown per task, arranged in columns that scroll horizontally, with GIST in the upper row and the ablation in the lower row. Both clips in a column are played at a single speed, indicated on each clip.</p>
 
       <div class="tabs" role="tablist" aria-label="Task">
         <button role="tab" aria-selected="true" aria-controls="panel-pour" id="tab-pour">
@@ -236,7 +236,7 @@
     <div class="container">
       <p class="eyebrow">Auxiliary head</p>
       <h2>The dense mixture at a sub-task boundary</h2>
-      <p class="lede">Every grounded token proposes a sub-goal pose, and the head maintains a full mixture over these proposals. Each sequence below is a five-second window centred on a single ground-truth sub-goal transition, so that the interval of genuine ambiguity is not obscured by the remainder of the episode. The mode the gripper is currently working towards is projected into the front camera in green and the one that follows it in orange, with the bar reporting the weight the head assigns to each and the readout giving the distance from the gripper to both. The banner marks the frames in which the two are live at once. As a boundary is approached, weight transfers from the outgoing sub-goal to the next while both remain represented, which is the behaviour that a single regressed pose cannot express.</p>
+      <p class="lede">Every grounded token proposes a sub-goal pose, and the head maintains a full mixture over these proposals. Each sequence below is a five-second window centred on a single ground-truth sub-goal transition, so that the interval of genuine ambiguity is not obscured by the remainder of the episode. The mode the gripper is currently working towards is projected into the front camera in green and the one that follows it in orange, with the bar reporting the weight the head assigns to each and the readout giving the distance from the gripper to both. As a boundary is approached, weight transfers from the outgoing sub-goal to the next while both remain represented, which is the behaviour that a single regressed pose cannot express.</p>
       <div class="head-scroll reveal" tabindex="0" role="group" aria-label="Sub-goal head at a sub-task boundary: three tasks, scroll horizontally">
         <div class="head-grid">
         <figure class="head-vid">
@@ -275,7 +275,7 @@
     <div class="container">
       <p class="eyebrow">Results</p>
       <h2>Both the supervision and its distributional representation contribute</h2>
-      <p class="lede">Success rate (%) on four simulation tasks and three real-world tasks. Every method that uses sub-goals adopts the same AWE-greedy extraction. Hovering a bar reports its value, and each chart can be switched to a table.</p>
+      <p class="lede">Success rate (%) on four simulation tasks and three real-world tasks. Every method that uses sub-goals adopts the same extraction, AWE-greedy at a threshold of 0.35, which picks the waypoints that best reconstruct the demonstrated trajectory. Hovering a bar reports its value, and each chart can be switched to a table.</p>
 
       <div class="chart-grid">
         <div class="chart-card wide reveal" id="chart-sim"></div>
