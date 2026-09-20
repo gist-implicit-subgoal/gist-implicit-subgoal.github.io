@@ -1,59 +1,314 @@
-<title>GIST: Goals as Implicit Supervision</title>
-<meta name="description" content="GIST: Goals as Implicit Supervision at Training for Visuomotor Policy Learning">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GIST: Goals as Implicit Supervision at Training</title>
+<meta name="description" content="GIST trains an end-to-end visuomotor policy with an auxiliary Gaussian-mixture sub-goal loss that is discarded at deployment. It outperforms hierarchical sub-goal policies on non-prehensile manipulation in simulation and in the real world.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="GIST: Goals as Implicit Supervision at Training for Visuomotor Policy Learning">
+<meta property="og:description" content="Sub-goals as a training signal rather than an input. An auxiliary Gaussian-mixture head shapes the visual representation and is discarded at deployment, yielding 33.3 points of additional real-world success.">
+<meta property="og:image" content="https://gist-implicit-subgoal.github.io/assets/img/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-<header class="hero">
+<nav class="nav" aria-label="Page">
   <div class="container">
-    <span class="venue">ICRA Submission</span>
-    <h1 class="title">GIST: Goals as Implicit Supervision at Training<br>for Visuomotor Policy Learning</h1>
+    <a class="brand" href="#top">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="8" cy="14" r="5" fill="var(--s1)" opacity=".9"/><circle cx="15" cy="9" r="5" fill="var(--s3)" opacity=".9"/><circle cx="11.5" cy="12" r="2.2" fill="var(--bg)"/></svg>
+      GIST
+    </a>
+    <ul>
+      <li><a href="#abstract">Abstract</a></li>
+      <li><a href="#method">Method</a></li>
+      <li><a href="#rollouts">Rollouts</a></li>
+      <li><a href="#head">Sub-goals</a></li>
+      <li><a href="#results">Results</a></li>
+      <li><a href="#bibtex">BibTeX</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="container">
+    <span class="venue"><span class="dot"></span>ICRA 2027 · Under review</span>
+    <h1 class="title"><span class="acronym">GIST</span>: Goals as Implicit Supervision at Training for Visuomotor Policy Learning</h1>
+    <p class="subtitle">Sub-goals are used as a training signal rather than as a policy input. An auxiliary Gaussian-mixture head over the next sub-goal shapes the visual representation on which the policy acts, and the deployed policy remains a single end-to-end network.</p>
 
     <p class="authors">Anonymous Authors</p>
-    <p class="affiliations"><em>Anonymized for double-blind review.</em></p>
+    <p class="affiliations">Anonymized for double-blind review</p>
 
     <div class="links">
-      <a class="btn primary" href="./">Paper (PDF)</a>
-      <a class="btn" href="./">Code</a>
-      <a class="btn" href="#bibtex">BibTeX</a>
+      <a class="btn primary" href="assets/GIST.pdf" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg>
+        Paper
+      </a>
+      <a class="btn" href="#rollouts">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3z"/></svg>
+        Videos
+      </a>
+      <a class="btn disabled" href="#" aria-disabled="true" title="Code will be released upon acceptance">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg>
+        Code (soon)
+      </a>
+      <a class="btn" href="#bibtex">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17a4 4 0 0 1 4-4V7a6 6 0 0 0-6 6v4h2zM17 17a4 4 0 0 1 4-4V7a6 6 0 0 0-6 6v4h2z"/></svg>
+        BibTeX
+      </a>
     </div>
   </div>
 </header>
 
 <main>
-  <div class="container">
-    <section id="teaser">
-      <img class="teaser" src="assets/img/teaser.png" alt="GIST overview figure: training pipeline with GMM auxiliary head, inference rollout, and success rate bar charts">
-      <p class="figure-caption">
-        <strong>Top:</strong> GIST predicts an action chunk from multi-view RGB observations, uses RoPE-4D to ground
-        observation, and uses a keypoint-based GMM auxiliary loss during training, which is discarded during rollout.
-        <strong>Bottom:</strong> Average success rate in simulation and full task success in the real world, against a
-        policy trained without the auxiliary loss and one whose auxiliary head regresses a single sub-goal.
-      </p>
-    </section>
+  <div class="teaser-wrap">
+    <div class="container">
+      <figure class="figure reveal">
+        <picture>
+          <source srcset="assets/img/teaser.webp" type="image/webp">
+          <img src="assets/img/teaser.png" alt="GIST overview: training pipeline with a GMM auxiliary head, an ambiguous sub-task boundary where the mixture places a mode on each plausible sub-goal, an inference rollout, and bar charts of success rates in simulation and the real world." width="2400" height="1764" fetchpriority="high">
+        </picture>
+        <figcaption>
+          <strong>Top:</strong> GIST predicts an action chunk from multi-view RGB observations, grounds them with 4D RoPE, and trains a keypoint-based GMM sub-goal head that is only used during training. At an ambiguous sub-task boundary two sub-goals are plausible at once (inset, blue and green), whereas a mixture places a mode on each, which a single regressed pose cannot represent.
+          <strong>Bottom:</strong> Average success in simulation and full-task success in the real world, compared against a policy trained without the auxiliary loss and one whose head regresses a single sub-goal.
+        </figcaption>
+      </figure>
 
-    <section id="abstract">
-      <h2 class="section-title">Abstract</h2>
-      <p class="abstract">
-        We present GIST, an end-to-end visuomotor policy trained with an auxiliary sub-goal prediction loss for manipulation tasks with non-prehensile components. Adding structure to behaviour cloning manipulation policies has been shown to improve robustness and generalization, with sub-goal based hierarchies predicting intermediate sub-goals with a high-level model and leaving a low-level policy to reach them. These sub-goals are typically extracted at gripper open-close frames, and hence the hierarchy is learned around this discrete signal. Non-prehensile settings, such as pouring or sweeping, hold the gripper in a fixed configuration, so no such open-close events occur and transitions go undetected. GIST instead uses sub-goals purely as a training signal. An auxiliary head reads the visual tokens the policy acts on and predicts a weighted Gaussian mixture over the next sub-goal gripper pose, placing a mode on each plausible sub-goal instead of collapsing to an average. The head is discarded after training. Across four simulation and three real-world tasks, GIST outperforms a standard sub-goal based hierarchical policy by 15.2\% and a stronger uncertainty-aware baseline that we formulate by 5.9\%, while removing the auxiliary loss costs 10.7\% in simulation and 33.3\% in the real world. GIST also outperforms Diffusion Policy by 5.0\% across five prehensile and non-prehensile MimicGen tasks, and by 4.4\% in target area coverage on Push-T. Performance is largely insensitive to the sub-goal extraction procedure, indicating that what matters is the presence of spatial goal supervision, not its precise definition. Website: \url{https://gist-implicit-subgoal.github.io/}
+      <div class="stats reveal" role="list" aria-label="Headline results">
+        <div class="stat good" role="listitem"><div class="value">+33.3<small>pts</small></div><div class="label">real-world full-task success over the same policy trained without the auxiliary loss</div></div>
+        <div class="stat" role="listitem"><div class="value">+15.2<small>pts</small></div><div class="label">over a standard sub-goal hierarchical policy in simulation, with no high-level model at inference</div></div>
+        <div class="stat" role="listitem"><div class="value">+5.9<small>pts</small></div><div class="label">over a stronger uncertainty-aware hierarchical baseline that passes the full mixture downstream</div></div>
+        <div class="stat" role="listitem"><div class="value">6<small>extractors</small></div><div class="label">sub-goal extraction procedures spanning 2.8 points of average success, indicating that the presence of the supervision matters more than its precise definition</div></div>
+      </div>
 
-      </p>
-    </section>
-
-    <section id="bibtex">
-      <h2 class="section-title">BibTeX</h2>
-      <pre class="bibtex"><button class="copy-btn" onclick="copyBibtex()">Copy</button><code id="bibtex-code">@misc{gist2026,
-  title  = {GIST: Goals as Implicit Supervision at Training for Visuomotor Policy Learning},
-  author = {Anonymous Authors},
-  note   = {Submitted to ICRA 2026},
-  year   = {2026}
-}</code></pre>
-    </section>
+      <section class="summary reveal" id="summary" aria-labelledby="summary-title">
+        <p class="eyebrow" id="summary-title">Summary</p>
+        <p>Hierarchical policies require a discrete gripper event to define sub-goals and a high-level model to predict them; non-prehensile tasks provide neither. GIST retains the sub-goal but relocates it into the training objective: a dense Gaussian-mixture head over the next gripper pose supervises the visual tokens on which the policy acts, so that the learned representation encodes the spatial structure of the task. The deployed policy is a single end-to-end network, and the auxiliary loss accounts for 33.3 points of real-world success.</p>
+      </section>
+    </div>
   </div>
+
+  <section id="abstract">
+    <div class="container narrow">
+      <p class="eyebrow">Abstract</p>
+      <div class="abstract reveal">
+        <p>We present GIST, an end-to-end visuomotor policy trained with an auxiliary sub-goal prediction loss for manipulation tasks with non-prehensile components. Adding structure to behaviour cloning manipulation policies has been shown to improve robustness and generalization, with sub-goal based hierarchies predicting intermediate sub-goals with a high-level model and leaving a low-level policy to reach them. These sub-goals are typically extracted at gripper open-close frames, and hence the hierarchy is learned around this discrete signal. Non-prehensile settings, such as pouring or sweeping, hold the gripper in a fixed configuration, so no such open-close events occur and transitions go undetected.</p>
+        <p>GIST instead uses sub-goals purely as a training signal. An auxiliary head reads the visual tokens the policy acts on and predicts a weighted Gaussian mixture over the next sub-goal gripper pose, placing a mode on each plausible sub-goal instead of collapsing to an average. The head is discarded after training. Across four simulation and three real-world tasks, GIST outperforms a standard sub-goal based hierarchical policy by 15.2% and a stronger uncertainty-aware baseline that we formulate by 5.9%, while removing the auxiliary loss costs 10.7% in simulation and 33.3% in the real world. GIST also outperforms Diffusion Policy by 5.0% across five prehensile and non-prehensile MimicGen tasks, and by 4.4% in target area coverage on Push-T. Performance is largely insensitive to the sub-goal extraction procedure, indicating that what matters is the presence of spatial goal supervision, not its precise definition.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="problem" class="alt">
+    <div class="container">
+      <p class="eyebrow">Motivation</p>
+      <h2>Non-prehensile tasks provide no discrete event on which to segment</h2>
+      <p class="lede">Pouring, sweeping and pushing maintain the gripper in a fixed configuration throughout the motion. Hierarchical policies that segment demonstrations at gripper open-close events therefore observe no transition, and in the neighbourhood of a boundary a single-pose predictor is drawn toward the average of two valid targets.</p>
+
+      <div class="compare reveal">
+        <div class="card">
+          <span class="tag prior">Sub-goal hierarchy (prior work)</span>
+          <h3>A high-level model commits to one sub-goal and a low-level policy reaches it</h3>
+          <ul>
+            <li>Sub-goals are extracted at gripper open-close frames, which do not occur in non-prehensile motion.</li>
+            <li>On either side of a boundary the observation is nearly identical while the target changes discontinuously, so a single regressed pose falls between the two.</li>
+            <li>An incorrect sub-goal is passed downstream, and the low-level policy cannot recover from it.</li>
+            <li>Two networks are evaluated at inference.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <span class="tag ours">GIST (ours)</span>
+          <h3>The sub-goal supervises the visual tokens and is never supplied as an input</h3>
+          <ul>
+            <li>Sub-goals are extracted from the trajectory itself; six procedures perform comparably.</li>
+            <li>An auxiliary head predicts a Gaussian <em>mixture</em> over the next sub-goal, assigning one mode to each plausible target rather than averaging them.</li>
+            <li>Only the shared encoder receives the goal gradient, so the sub-goal shapes the representation available to the action head.</li>
+            <li>Neither a high-level model nor a sub-goal input is required at inference; a single end-to-end network is deployed.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="tasks reveal">
+        <div class="task">
+          <div class="glyph" aria-hidden="true">
+            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 34h18l-2 7H11z" stroke="var(--s2)"/><path d="M9 34c0-3 3-4 9-4s9 1 9 4" stroke="var(--s2)"/>
+              <g transform="rotate(-40 33 16)"><rect x="28" y="6" width="10" height="18" rx="2" stroke="var(--s1)"/><path d="M30 6V4h6v2" stroke="var(--s1)"/></g>
+              <path d="M26 20c-2 3-4 6-5 10" stroke="var(--s3)" stroke-dasharray="1 3"/>
+            </svg>
+          </div>
+          <div><h4>Pouring</h4><p>Grasp a jar, transport it over a bowl, and tilt to pour. The pouring phase contains no gripper event.</p></div>
+        </div>
+        <div class="task">
+          <div class="glyph" aria-hidden="true">
+            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M30 6L18 26" stroke="var(--s1)"/><path d="M14 26h10l3 10H9z" stroke="var(--s1)"/><path d="M12 30l1 3M17 30l1 4M22 30l1 4"/>
+              <path d="M8 41h12" stroke="var(--s2)"/><circle cx="34" cy="38" r="2" stroke="var(--s2)"/><circle cx="40" cy="34" r="2" stroke="var(--s2)"/>
+              <path d="M28 40c3 0 6-2 10-2" stroke="var(--s3)" stroke-dasharray="1 3"/>
+            </svg>
+          </div>
+          <div><h4>Sweeping</h4><p>Push crumpled tissues into a dustpan with a brush. Several sweep orderings are valid.</p></div>
+        </div>
+        <div class="task">
+          <div class="glyph" aria-hidden="true">
+            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="8" y="20" width="14" height="14" rx="2" stroke="var(--s2)"/>
+              <rect x="30" y="20" width="12" height="14" rx="2" stroke="var(--s3)" stroke-dasharray="3 3"/>
+              <path d="M4 27H2" stroke="var(--s1)"/><path d="M6 24l-3 3 3 3" stroke="var(--s1)"/>
+              <path d="M22 27h6" stroke="var(--s1)"/><path d="M26 24l3 3-3 3" stroke="var(--s1)"/>
+            </svg>
+          </div>
+          <div><h4>Pushing</h4><p>Displace a block to a target region without grasping it.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="method">
+    <div class="container">
+      <p class="eyebrow">Method</p>
+      <h2>A single network trained under two objectives on a shared visual representation</h2>
+      <p class="lede">GIST is a flow-matching DiT policy on 3D-grounded visual tokens. During training an auxiliary head reads the same tokens and is trained by the negative log-likelihood of the demonstrated next sub-goal under a per-anchor Gaussian mixture. The total loss is <em>L</em><sub>FM</sub> + <em>c</em><sub>1</sub>·<em>L</em><sub>goal</sub> with <em>c</em><sub>1</sub> = 0.1, so that the sub-goal shapes the representation attended to by the action head without entering its input.</p>
+
+      <figure class="figure reveal">
+        <picture>
+          <source srcset="assets/img/architecture.webp" type="image/webp">
+          <img src="assets/img/architecture.png" alt="GIST architecture: a 3D-grounded vision encoder with frozen DINOv2 and 4D RoPE self-attention produces tokens with 3D anchors; an auxiliary GMM head predicts a mixture over the next sub-goal; a diffusion transformer generates the action chunk. Total loss is L_FM plus c1 times L_goal." width="2400" height="1016" loading="lazy">
+        </picture>
+        <figcaption>
+          A frozen DINOv2 backbone and a self-attention trunk produce visual tokens anchored at their unprojected 3D positions. The auxiliary head reads these tokens and predicts a Gaussian mixture over the next sub-goal, placing a mode on each plausible sub-goal at an ambiguous boundary (right, blue and green). Its gradient reaches only the head and the shared encoder, never the action head, so that the sub-goal influences GIST solely through the visual representation. The head is removed at deployment.
+        </figcaption>
+      </figure>
+
+      <div class="cards reveal" style="margin-top:28px">
+        <div class="card">
+          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4.5v9L12 20l-8-4.5v-9z"/><path d="M12 11l8-4.5M12 11L4 6.5M12 11v9"/></svg></div>
+          <div class="step">01 · Grounding</div>
+          <h3>3D-grounded visual tokens</h3>
+          <p>Each DINOv2 patch is unprojected with depth and calibration to a world-frame anchor. Four gripper keypoints join as tokens, and a 4D rotary embedding over (<em>x</em>, <em>y</em>, <em>z</em>, <em>t</em>) conditions attention on relative metric geometry.</p>
+        </div>
+        <div class="card">
+          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 18c3 0 4-10 7-10s3 10 6 10 3-8 7-8"/><circle cx="9" cy="8" r="1.4" fill="currentColor"/><circle cx="22" cy="10" r="1.4" fill="currentColor"/></svg></div>
+          <div class="step">02 · Auxiliary head</div>
+          <h3>Per-anchor Gaussian mixture</h3>
+          <p>Every grounded token proposes a sub-goal displacement and a weight. Trained by NLL over a variance ladder, the mixture retains a mode on <em>each</em> plausible next sub-goal rather than averaging them, which is the characteristic failure mode of a regression head.</p>
+        </div>
+        <div class="card">
+          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/><path d="M10 11v5M14 11v5"/></svg></div>
+          <div class="step">03 · Deployment</div>
+          <h3>End-to-end at deployment</h3>
+          <p>The goal head receives gradient only from <em>L</em><sub>goal</sub>, the DiT only from <em>L</em><sub>FM</sub>; both reach the shared encoder. At inference the encoder runs once and the DiT acts on observation and proprioception alone, since the representation already encodes the sub-goal structure. Neither a high-level model nor a sub-goal input is required.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="rollouts" class="alt">
+    <div class="container">
+      <p class="eyebrow">Real-world rollouts</p>
+      <h2>An identical policy and training set, with and without the auxiliary loss</h2>
+      <p class="lede">The two policies share the architecture, random seed, data ordering and training schedule; the only difference between them is the auxiliary gradient. Evaluation uses a Franka arm, 100 teleoperated demonstrations per task and 20 different scene configurations, largely unseen during training. Eight rollouts are shown per task, arranged in columns that scroll horizontally, with GIST in the upper row and the ablation in the lower row. Both clips in a column are played at a single speed, indicated on each clip.</p>
+
+      <div class="tabs" role="tablist" aria-label="Task">
+        <button role="tab" aria-selected="true" aria-controls="panel-pour" id="tab-pour">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 16h10l-1 5H5z"/><g transform="rotate(-35 16 7)"><rect x="13" y="2" width="6" height="10" rx="1.5"/></g></svg>Pouring</button>
+        <button role="tab" aria-selected="false" aria-controls="panel-sweep" id="tab-sweep" tabindex="-1">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3l-6 10"/><path d="M7 13h6l2 6H5z"/></svg>Sweeping</button>
+        <button role="tab" aria-selected="false" aria-controls="panel-push" id="tab-push" tabindex="-1">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="9" width="8" height="8" rx="1.5"/><path d="M13 13h7M17 10l3 3-3 3"/></svg>Pushing</button>
+      </div>
+
+      <div id="video-panels"></div>
+
+      <div class="vs-controls">
+        <button type="button" id="restart-all">↺ Restart clips</button>
+        <span>Upper row: GIST. Lower row: the identical policy trained without the auxiliary loss. All clips are muted and looped, and only those currently on screen are played.</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section id="head">
+    <div class="container">
+      <p class="eyebrow">Auxiliary head</p>
+      <h2>The dense mixture at a sub-task boundary</h2>
+      <p class="lede">Every grounded token proposes a sub-goal pose, and the head maintains a full mixture over these proposals. Each sequence below is a five-second window centred on a single ground-truth sub-goal transition, so that the interval of genuine ambiguity is not obscured by the remainder of the episode. The mode the gripper is currently working towards is projected into the front camera in green and the one that follows it in orange, with the bar reporting the weight the head assigns to each and the readout giving the distance from the gripper to both. The banner marks the frames in which the two are live at once. As a boundary is approached, weight transfers from the outgoing sub-goal to the next while both remain represented, which is the behaviour that a single regressed pose cannot express.</p>
+      <div class="head-scroll reveal" tabindex="0" role="group" aria-label="Sub-goal head at a sub-task boundary: three tasks, scroll horizontally">
+        <div class="head-grid">
+        <figure class="head-vid">
+          <picture>
+            <source srcset="assets/video/transition_sweep.webp" type="image/webp">
+            <img src="assets/video/transition_sweep.gif" width="768" height="878" loading="lazy" decoding="async" alt="Sweeping: the head splits its weight between the current sub-goal and the next, 79 per cent against 21 and then 64 against 36, while the collected pile is delivered into the dustpan.">
+          </picture>
+          <figcaption><strong>Sweeping.</strong> Mid-episode, as the collected pile is delivered into the dustpan and one tissue remains on the table. The clearest split: weight moves to 79/21, then 64/36, before handing over entirely. 20 frames at 4&nbsp;fps, approximately real time.</figcaption>
+        </figure>
+        <figure class="head-vid">
+          <picture>
+            <source srcset="assets/video/transition_pour.webp" type="image/webp">
+            <img src="assets/video/transition_pour.gif" width="768" height="878" loading="lazy" decoding="async" alt="Pouring: the next sub-goal appears above the bowl while the head still holds its weight on the current one, as the lift begins.">
+          </picture>
+          <figcaption><strong>Pouring.</strong> The bowl has been reached and the lift is not yet committed. A single frame carries both sub-goals, three centimetres apart. 20 frames at 4&nbsp;fps, approximately real time.</figcaption>
+        </figure>
+        <figure class="head-vid">
+          <picture>
+            <source srcset="assets/video/transition_push.webp" type="image/webp">
+            <img src="assets/video/transition_push.gif" width="768" height="878" loading="lazy" decoding="async" alt="Pushing: the current and next sub-goals are both live for two frames as the contact point on the block is about to change.">
+          </picture>
+          <figcaption><strong>Pushing.</strong> The contact point on the block is about to change. Both sub-goals are flagged live across the boundary, though the weight stays with the outgoing one. 20 frames at 4&nbsp;fps, approximately real time.</figcaption>
+        </figure>
+        </div>
+      </div>
+      <p class="scroll-hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>Three tasks; scroll the strip horizontally to reach the rest.</p>
+      <div class="head-legend" aria-label="Overlay legend">
+        <span><i style="background:#24c880"></i>current sub-goal, the mode the gripper is working towards</span>
+        <span><i style="background:#f07a3f"></i>next sub-goal, the mode that follows it</span>
+        <span><i class="bar" style="background:linear-gradient(90deg,#24c880 0 62%,#f07a3f 62% 100%)"></i>weight on each of the two</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="results">
+    <div class="container">
+      <p class="eyebrow">Results</p>
+      <h2>Both the supervision and its distributional representation contribute</h2>
+      <p class="lede">Success rate (%) on four simulation tasks and three real-world tasks. Every method that uses sub-goals adopts the same AWE-greedy extraction. Hovering a bar reports its value, and each chart can be switched to a table.</p>
+
+      <div class="chart-grid">
+        <div class="chart-card wide reveal" id="chart-sim"></div>
+        <div class="chart-card reveal" id="chart-real"></div>
+        <div class="chart-card reveal" id="chart-partial"></div>
+        <div class="chart-card reveal" id="chart-extract"></div>
+        <div class="chart-card reveal" id="chart-dp"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="bibtex" class="alt">
+    <div class="container narrow">
+      <p class="eyebrow">Citation</p>
+      <h2>BibTeX</h2>
+      <pre class="bibtex"><button class="copy-btn" onclick="copyBibtex()" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button><code id="bibtex-code">@inproceedings{gist2027,
+  title     = {{GIST}: Goals as Implicit Supervision at Training for Visuomotor Policy Learning},
+  author    = {Anonymous Authors},
+  booktitle = {IEEE International Conference on Robotics and Automation (ICRA)},
+  year      = {2027},
+  note      = {Under review}
+}</code></pre>
+    </div>
+  </section>
 </main>
 
 <footer>
   <div class="container">
-    <p>Website built with a plain HTML/CSS template.</p>
+    <p>Project page for the ICRA 2027 submission <em>GIST: Goals as Implicit Supervision at Training</em>. Anonymized for double-blind review.</p>
   </div>
 </footer>
 
+<div class="chart-tip" id="chart-tip" role="status" aria-live="polite"></div>
 <script src="script.js"></script>
+</body>
+</html>
