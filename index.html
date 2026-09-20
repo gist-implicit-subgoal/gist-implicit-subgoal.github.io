@@ -195,7 +195,7 @@
           <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 18c3 0 4-10 7-10s3 10 6 10 3-8 7-8"/><circle cx="9" cy="8" r="1.4" fill="currentColor"/><circle cx="22" cy="10" r="1.4" fill="currentColor"/></svg></div>
           <div class="step">02 · Auxiliary head</div>
           <h3>Per-anchor Gaussian mixture</h3>
-          <p>Every grounded token proposes a sub-goal displacement and a weight. The head is trained by negative log-likelihood at several Gaussian widths at once, from broad to narrow, so that the wide settings first place mass in the right region and the narrow ones sharpen it, with a uniform-weight term at each width keeping every anchor regressing a plausible offset. The mixture therefore retains a mode on <em>each</em> plausible next sub-goal rather than averaging them, which is the characteristic failure mode of a regression head.</p>
+          <p>Every grounded token proposes a sub-goal displacement and a weight. Trained by negative log-likelihood across several Gaussian widths, from broad to narrow, the mixture keeps a mode on <em>each</em> plausible next sub-goal rather than averaging them, which is how a regression head fails.</p>
         </div>
         <div class="card">
           <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/><path d="M10 11v5M14 11v5"/></svg></div>
