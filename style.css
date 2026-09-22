@@ -421,3 +421,40 @@ footer a { color: var(--muted); }
 }
 .scenes figcaption { margin-top: 10px; font-size: 0.86rem; color: var(--text-2); }
 
+
+/* ---------- Appendix PDF viewer ---------- */
+.pdf-viewer {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden;
+}
+.pdf-toolbar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.pdf-toolbar button {
+  width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;
+  font: 600 1.1rem/1 var(--sans); color: var(--text);
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  cursor: pointer;
+}
+.pdf-toolbar button:hover { border-color: var(--accent); color: var(--accent-ink); }
+#pdf-zoom-level {
+  min-width: 52px; text-align: center;
+  font: 500 0.9rem var(--mono); color: var(--text-2);
+}
+.pdf-open {
+  margin-left: auto; font-size: 0.9rem; font-weight: 600;
+  color: var(--accent-ink); text-decoration: none;
+}
+.pdf-open:hover { text-decoration: underline; }
+.pdf-pages {
+  height: 75vh; overflow: auto; padding: 16px;
+  background: var(--surface-3); text-align: center;
+}
+.pdf-page {
+  display: inline-block; margin: 0 auto 16px;
+  background: #fff; border: 1px solid var(--border-soft);
+  box-shadow: 0 2px 12px -6px rgba(27, 31, 39, 0.25);
+}
+.pdf-status { padding: 40px 0; color: var(--text-2); }

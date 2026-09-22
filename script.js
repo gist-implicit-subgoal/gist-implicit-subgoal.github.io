@@ -593,3 +593,82 @@ function copyBibtex() {
     setTimeout(() => (btn.textContent = original), 1500);
   });
 }
+
+/* ---------- Appendix PDF viewer ---------- */
+(function () {
+  const container = document.getElementById("pdf-pages");
+  if (!container || typeof pdfjsLib === "undefined") return;
+
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+  const zoomLabel = document.getElementById("pdf-zoom-level");
+  const ZOOM_MIN = 0.5, ZOOM_MAX = 3, ZOOM_STEP = 0.25;
+  let pdfDoc = null;
+  let zoom = 1;
+  let rendering = false;
+  let pendingRender = false;
+
+  function renderAll() {
+    if (!pdfDoc) return;
+    if (rendering) { pendingRender = true; return; }
+    rendering = true;
+    zoomLabel.textContent = Math.round(zoom * 100) + "%";
+    container.innerHTML = "";
+    const styles = getComputedStyle(container);
+    const padding = parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
+    const fitWidth = container.clientWidth - padding;
+    const dpr = window.devicePixelRatio || 1;
+
+    let chain = Promise.resolve();
+    for (let num = 1; num <= pdfDoc.numPages; num++) {
+      chain = chain
+        .then(() => pdfDoc.getPage(num))
+        .then((page) => {
+          const base = page.getViewport({ scale: 1 });
+          const viewport = page.getViewport({ scale: (fitWidth / base.width) * zoom });
+          const canvas = document.createElement("canvas");
+          canvas.className = "pdf-page";
+          canvas.width = Math.floor(viewport.width * dpr);
+          canvas.height = Math.floor(viewport.height * dpr);
+          canvas.style.width = viewport.width + "px";
+          canvas.style.height = viewport.height + "px";
+          container.appendChild(canvas);
+          return page.render({
+            canvasContext: canvas.getContext("2d"),
+            viewport: viewport,
+            transform: dpr !== 1 ? [dpr, 0, 0, dpr, 0, 0] : null,
+          }).promise;
+        });
+    }
+    chain.then(() => {
+      rendering = false;
+      if (pendingRender) { pendingRender = false; renderAll(); }
+    });
+  }
+
+  function setZoom(value) {
+    zoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, value));
+    renderAll();
+  }
+
+  document.getElementById("pdf-zoom-in").addEventListener("click", () => setZoom(zoom + ZOOM_STEP));
+  document.getElementById("pdf-zoom-out").addEventListener("click", () => setZoom(zoom - ZOOM_STEP));
+
+  let resizeTimer;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(renderAll, 200);
+  });
+
+  pdfjsLib
+    .getDocument("Appendix.pdf")
+    .promise.then((doc) => {
+      pdfDoc = doc;
+      renderAll();
+    })
+    .catch(() => {
+      container.innerHTML =
+        '<p class="pdf-status">Could not load the appendix here. <a href="Appendix.pdf" target="_blank" rel="noopener">Open the PDF directly</a>.</p>';
+    });
+})();

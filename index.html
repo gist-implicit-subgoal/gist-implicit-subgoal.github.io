@@ -287,7 +287,25 @@
     </div>
   </section>
 
-  <section id="bibtex" class="alt">
+  <section id="appendix" class="alt">
+    <div class="container">
+      <p class="eyebrow">Supplementary Material</p>
+      <h2>Appendix</h2>
+      <div class="pdf-viewer">
+        <div class="pdf-toolbar">
+          <button type="button" id="pdf-zoom-out" aria-label="Zoom out">&minus;</button>
+          <span id="pdf-zoom-level">100%</span>
+          <button type="button" id="pdf-zoom-in" aria-label="Zoom in">+</button>
+          <a class="pdf-open" href="Appendix.pdf" target="_blank" rel="noopener">Open PDF &#8599;</a>
+        </div>
+        <div class="pdf-pages" id="pdf-pages">
+          <p class="pdf-status">Loading appendix&hellip;</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="bibtex">
     <div class="container narrow">
       <p class="eyebrow">Citation</p>
       <h2>BibTeX</h2>
@@ -309,6 +327,7 @@
 </footer>
 
 <div class="chart-tip" id="chart-tip" role="status" aria-live="polite"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
