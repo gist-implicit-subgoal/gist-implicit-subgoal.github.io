@@ -85,13 +85,6 @@ strong { font-weight: 600; }
     radial-gradient(45% 40% at 75% 15%, color-mix(in srgb, var(--s3) 12%, transparent), transparent 70%);
   pointer-events: none; z-index: -1;
 }
-.venue {
-  display: inline-flex; align-items: center; gap: 8px;
-  font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--accent-ink); background: var(--accent-soft);
-  padding: 6px 14px; border-radius: 999px; margin-bottom: 22px;
-}
-.venue .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
 h1.title {
   font-size: clamp(2rem, 5vw, 3.2rem);
   line-height: 1.12; letter-spacing: -0.025em; font-weight: 800;
@@ -232,6 +225,14 @@ h3 { font-size: 1.12rem; margin: 0 0 8px; letter-spacing: -0.01em; font-weight: 
   border: 1px solid var(--border); background: var(--surface); color: var(--text-2);
 }
 .vs-controls button:hover { border-color: var(--accent); color: var(--accent-ink); }
+
+/* ---------- lead supplementary video ---------- */
+.video-wrap { padding: 8px 0 24px; }
+.video-feature {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  overflow: hidden; box-shadow: var(--shadow);
+}
+.video-feature video { width: 100%; aspect-ratio: 16/9; background: #0b0d12; object-fit: contain; }
 
 /* ---------- charts ---------- */
 .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
